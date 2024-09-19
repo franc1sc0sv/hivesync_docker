@@ -2,7 +2,7 @@ import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import RequestWithUser from "../interfaces/auth_interface";
 
 export const FriendsProxyMiddeware = createProxyMiddleware({
-  target: "http://hivesync_api-social_service-1:3000/api/v1",
+  target: "http://hivesync_docker-social_service-1:3000/api/v1",
   changeOrigin: true,
   pathRewrite: { "^/social": "" },
   on: {
@@ -14,7 +14,7 @@ export const FriendsProxyMiddeware = createProxyMiddleware({
 });
 
 export const UserInfoProxyMiddleware = createProxyMiddleware({
-  target: "http://hivesync_api-user_info_service-1:3000/api/v1",
+  target: "http://hivesync_docker-user_info_service-1:3000/api/v1",
   changeOrigin: true,
   pathRewrite: { "^/user_info": "" },
   on: {
@@ -26,7 +26,7 @@ export const UserInfoProxyMiddleware = createProxyMiddleware({
 });
 
 export const ServersProxyMiddleware = createProxyMiddleware({
-  target: "http://hivesync_api-server_service-1:3000/api/v1",
+  target: "http://hivesync_docker-server_service-1:3000/api/v1",
   changeOrigin: true,
   pathRewrite: { "^/sever": "" },
   on: {
@@ -38,7 +38,7 @@ export const ServersProxyMiddleware = createProxyMiddleware({
 });
 
 export const ChannelsProxyMiddleware = createProxyMiddleware({
-  target: "http://hivesync_api-channels_service-1:3000/api/v1",
+  target: "http://hivesync_docker-channels_service-1:3000/api/v1",
   changeOrigin: true,
   pathRewrite: { "^/channels": "" },
   on: {
@@ -51,7 +51,7 @@ export const ChannelsProxyMiddleware = createProxyMiddleware({
 });
 
 export const NotificationsProxyMiddleware = createProxyMiddleware({
-  target: "http://hivesync_api-notifications_service-1:3000/api/v1",
+  target: "http://hivesync_docker-notifications_service-1:3000/api/v1",
   changeOrigin: true,
   pathRewrite: { "^/notifications": "" },
   on: {
