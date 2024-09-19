@@ -1,0 +1,224 @@
+version: "3"
+networks:
+  hivesync_network:
+    driver: bridge
+services:
+  # Data Bases
+  db_auth:
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - ${GATEWAY_DB_PORT}:5432
+    volumes:
+      - postgres_db_auth:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${DB_USER}
+      - POSTGRES_USER=${DB_PASSWORD}
+      - POSTGRES_DB=${GATEWAY_DB_NAME}
+    networks:
+      - hivesync_network
+
+  db_social:
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - ${SOCIAL_DB_PORT}:5432
+    volumes:
+      - postgres_db_social:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${DB_USER}
+      - POSTGRES_USER=${DB_PASSWORD}
+      - POSTGRES_DB=${SOCIAL_DB_NAME}
+    networks:
+      - hivesync_network
+
+  db_user:
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - ${USER_DB_PORT}:5432
+    volumes:
+      - postgres_db_user:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${DB_USER}
+      - POSTGRES_USER=${DB_PASSWORD}
+      - POSTGRES_DB=${USER_DB_NAME}
+    networks:
+      - hivesync_network
+
+  db_server:
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - ${SERVER_DB_PORT}:5432
+    volumes:
+      - postgres_db_sever:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${DB_USER}
+      - POSTGRES_USER=${DB_PASSWORD}
+      - POSTGRES_DB=${SERVER_DB_NAME}
+    networks:
+      - hivesync_network
+
+  db_notifications:
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - ${NOTIFICATIONS_DB_PORT}:5432
+    volumes:
+      - postgres_db_notifications:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${DB_USER}
+      - POSTGRES_USER=${DB_PASSWORD}
+      - POSTGRES_DB=${NOTIFICATIONS_DB_NAME}
+    networks:
+      - hivesync_network
+
+  db_channels:
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - ${CHANNELS_DB_PORT}:5432
+    volumes:
+      - postgres_db_channels:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${DB_USER}
+      - POSTGRES_USER=${DB_PASSWORD}
+      - POSTGRES_DB=${CHANNELS_DB_NAME}
+    networks:
+      - hivesync_network
+
+  # SERVICES
+  api_gateway:
+    build:
+      context: ./backend/api_gateway
+    ports:
+      - "${GATEWAY_SERVICE_PORT}:3000"
+      - ${GATEWAY_PRISMA_PORT}:5555
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=${DEFAULT_INTERNAL_PORT_API}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${GATEWAY_DB_HOST}:5432/${GATEWAY_DB_NAME}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - FRONTEND_URL=${FRONTEND_URL}
+    volumes:
+      - ./backend/api_gateway:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - hivesync_network
+
+  social_service:
+    build:
+      context: ./backend/social_service
+    ports:
+      - ${SOCIAL_PRISMA_PORT}:5555
+    environment:
+      - PORT=${DEFAULT_INTERNAL_PORT_API}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${SOCIAL_DB_HOST}:5432/${SOCIAL_DB_NAME}
+    volumes:
+      - ./backend/social_service:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - hivesync_network
+
+  user_info_service:
+    build:
+      context: ./backend/user_info_service
+    ports:
+      - ${USER_PRISMA_PORT}:5555
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=${DEFAULT_INTERNAL_PORT_API}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${USER_DB_HOST}:5432/${USER_DB_NAME}
+    volumes:
+      - ./backend/user_info_service:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - hivesync_network
+
+  server_service:
+    build:
+      context: ./backend/server_service
+    ports:
+      - ${SERVER_PRISMA_PORT}:5555
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=${DEFAULT_INTERNAL_PORT_API}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${SERVER_DB_HOST}:5432/${SERVER_DB_NAME}
+    volumes:
+      - ./backend/server_service:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - hivesync_network
+
+  notifications_service:
+    build:
+      context: ./backend/notifications_service
+    ports:
+      - ${NOTIFICATIONS_PRISMA_PORT}:5555
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=${DEFAULT_INTERNAL_PORT_API}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${NOTIFICATIONS_DB_HOST}:5432/${NOTIFICATIONS_DB_NAME}
+    volumes:
+      - ./backend/notifications_service:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - hivesync_network
+
+  channels_service:
+    build:
+      context: ./backend/channels_service
+    ports:
+      - ${CHANNELS_PRISMA_PORT}:5555
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=${DEFAULT_INTERNAL_PORT_API}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${CHANNELS_DB_HOST}:5432/${CHANNELS_DB_NAME}
+    volumes:
+      - ./backend/channels_service:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - hivesync_network
+
+  peer_service:
+    build:
+      context: ./backend/peer_service
+    ports:
+      - "${PEER_PORT}:9001"
+    environment:
+      - DEFAULT_INTERNAL_PORT_PEER=${DEFAULT_INTERNAL_PORT_PEER}
+    volumes:
+      - ./backend/peer_service:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - hivesync_network
+
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+      - VITE_SOCKET=${VITE_SOCKET}
+      - VITE_GOOGLE_API_KEY=${VITE_GOOGLE_API_KEY}
+      - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
+    networks:
+      - hivesync_network
+
+
+volumes:
+  postgres_db_auth:
+  postgres_db_social:
+  postgres_db_user:
+  postgres_db_sever:
+  postgres_db_notifications:
+  postgres_db_channels:
+
+

@@ -1,0 +1,55 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Servers {
+  id            String          @id @default(uuid())
+  name          String
+  avatarURL     String
+  privacity     PrivacityServer
+  id_user       String
+  createdAt     DateTime        @default(now())
+  url           String
+  backgroundUrl String          @default("#382C6C")
+
+  categories Categories[]    @relation("ServerCategories")
+  events     Event[]         @relation("ServerEvents")
+  members    ServerMembers[] @relation("ServerMemberships")
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  date        DateTime
+  serverId    String
+  server      Servers  @relation("ServerEvents", fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+model Categories {
+  id       String  @id @default(uuid())
+  name     String
+  serverId String
+  Servers  Servers @relation("ServerCategories", fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+model ServerMembers {
+  id               String   @id @default(uuid())
+  id_user          String
+  role             String
+  joinedAt         DateTime @default(now())
+  serverId         String
+  isActiveInServer Boolean
+  server           Servers  @relation("ServerMemberships", fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+enum PrivacityServer {
+  PUBLIC
+  PRIVATE
+}

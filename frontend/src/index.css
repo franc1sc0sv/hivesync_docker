@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.screen_overlay {
+  height: calc(100vh - 8rem);
+}
+
+* {
+  font-family: Amiko, sans-serif;
+}

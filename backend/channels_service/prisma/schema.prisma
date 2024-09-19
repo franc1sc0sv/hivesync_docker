@@ -1,0 +1,58 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Channels {
+  id         String      @id @default(uuid())
+  name       String
+  CategoryID String
+  ServerID   String
+  type       ChannelType
+}
+
+model Messages {
+  id        String   @id @default(uuid())
+  message   String
+  id_sender String
+  room      String
+  sendAt    DateTime @default(now())
+}
+
+model Call {
+  id           String            @id @default(uuid())
+  roomId       String            @unique
+  creator_id   String
+  status       CallStatus        @default(PENDING)
+  startedAt    DateTime          @default(now())
+  participants CallParticipant[]
+}
+
+model CallParticipant {
+  id     String @id @default(uuid())
+  userId String
+  callId String
+
+  isMicrofoneActive Boolean
+  IsCameraActive    Boolean
+
+  joinedAt DateTime @default(now())
+
+  call Call @relation(fields: [callId], references: [id], onDelete: Cascade)
+}
+
+enum ChannelType {
+  VIDEO
+  TEXT
+}
+
+enum CallStatus {
+  PENDING
+  IN_PROGRESS
+  ENDED
+}
